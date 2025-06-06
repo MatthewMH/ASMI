@@ -45,3 +45,11 @@ It is a computer-aided diagnosis of lung disease using image-based machine learn
 ![Local Image](media/uploads/2.png)
 
 ![Local Image](media/uploads/3.png)
+
+# Paper
+Paper related to this project can be found here https://ieeexplore.ieee.org/abstract/document/10903684
+
+	Isnan, Mahmud, et al. "InDRI: Intelligent Diagnosis Radiology Images." 2024 6th International Conference on Cybernetics and Intelligent System (ICORIS). IEEE, 2024.
+
+# Acknowledgment
+This project is collaboration with Imelda Hospital and Imelda University
