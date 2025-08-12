@@ -2,14 +2,18 @@
 {% extends "admin/base_site.html" %}
 <!-- {% load i18n admin_urls static admin_modify %} -->
 {% block branding %}
-    <h1 id="site-name"><a href="{% url 'admin:index' %}">InDRI (Intelligent Diagnosis of Radiology Images)</a></h1>
+    <div>
+        <div style="width: 100%;">
+            <h1 id="site-name"><a href="{% url 'admin:index' %}">ASMI (Artificial Intelligence System for Medical Images)</a></h1>
+            <small>© 2025 Powered by BINUS University BDSRC|AIRDC. All Rights Reserved.</small>
+        </div>
+    </div>
 {% endblock %}
-
 
 <!DOCTYPE html>
 <html>
 <head>
-   
+  
 </head>
 <body>
     
@@ -19,7 +23,6 @@
         {{ form.as_p }}
         <button type="submit">Upload</button>
     </form>
-
-{% endblock %}        
+{% endblock %} 
 </body>
 </html>

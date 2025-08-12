@@ -13,23 +13,20 @@ from django.utils.translation import gettext_lazy as _
 from django.core.validators import RegexValidator
 from datetime import datetime
 
-
-
-
 from hibahs.LimeViz import get_image, get_pil_transform, batch_predict, batch_explaination
 from skimage.segmentation import mark_boundaries
-import cv2
+
+from ultralytics import YOLO
 import os
+import cv2
 
+model = YOLO('media/best_sputum.pt') #cara simpan model ke db
+class_names = model.names
 
-
-
-
-
-
-admin.site.site_header = 'InDRI (Intelligent Diagnosis of Radiology Images)'
+admin.site.site_header = 'ASMI (Artificial Intelligence System for Medical Images)'
 # Register your models here.
 from .models import UploadedFile, PatientData as PatientDataModel
+from .models import GambarMikroskopikSputum
 
 class PatientUpload(admin.StackedInline):
 	model = UploadedFile
@@ -73,14 +70,8 @@ class PatientDataForm(forms.ModelForm):
 class PatientData(admin.ModelAdmin):
    form = PatientDataForm
    list_display = ('patientID', 'patientName', 'patientBirthDate', 'patientGender') 
-
-
    
 admin.site.register(PatientDataModel, PatientData)
-
-
-
-
 
 class PatientDetailView(PermissionRequiredMixin, DetailView):
     permission_required = "hibahs.view_uploadedimage"
@@ -157,7 +148,77 @@ class PatientDetailView(PermissionRequiredMixin, DetailView):
 
         return render(request, self.template_name)
 
+class PatientDetailViewMikroskopik(PermissionRequiredMixin, DetailView):
+    permission_required = "hibahs.view_uploadedgambarmikroskopiksputum"
+    template_name = "patient_mikroskopik.html"
+    model = PatientDataModel
 
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            **admin.site.each_context(self.request),
+            "opts": self.model._meta,
+        }
+    
+    def post(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            action = request.POST.get('action')
+
+            if action == 'inference':
+                selected_patient = request.POST.getlist('selected_files')
+                if not selected_patient:
+
+                    return HttpResponse(f'<script>alert("Silahkan Pilih Salah satu image yang mau didiagnosa"); window.history.back();</script>')
+
+                else:
+                    filenames = []
+                    ids = []
+
+                    for item in selected_patient:
+                        parts = item.split(', ')  # Split each item by ', '
+                        if len(parts) == 2:
+                            filenames.append(parts[0])
+                            ids.append(parts[1])
+
+                    image_paths = [path for path in filenames]
+                    
+                    results = []
+                    for image_path in image_paths:
+                        results.append(["media/{}".format(image_path), model("media/{}".format(image_path))[0]])
+                    
+                    sputum_count = []
+
+                    counter = 0
+                    for result in results:
+                        image = cv2.imread(result[0])
+                        for box in result[1].boxes:
+                            x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
+                            cls = int(box.cls[0].item())
+                            label = f"{class_names[cls]}"
+                        
+                            cv2.rectangle(image, (x1, y1), (x2, y2), color=(0, 255, 0), thickness=5)
+                        
+                        cv2.imwrite("media/static/mikroskopik/cam_{}.jpg".format(ids[counter]), image)
+
+                        sputum_count.append(len(result[1].boxes))
+                        counter += 1
+                         
+                    # probs = [[6.95283189e-02, 1.94228895e-03, 1.14850536e-01, 8.13678920e-01], [9.99474347e-01, 5.25628682e-04, 1.26138291e-08, 3.79446767e-08]]
+
+                    combined_data = []
+
+                    for i in range(len(filenames)):
+                        GambarMikroskopikSputum.objects.filter(id=ids[i]).update(diagnosisResult=sputum_count[i], limeImageResult="mikroskopik/cam_" + str(ids[i]) + ".jpg")
+                        combined_data.append({
+                            'result': sputum_count[i],
+                            'filename': filenames[i],
+                            'limeImage': ids[i],
+                        })
+                
+                    # return HttpResponse(f'ID: {filenames}')
+                    return render(request, "inference_output_mikroskopik.html",   {'combined_data': combined_data})
+
+        return render(request, self.template_name)
 
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
@@ -186,8 +247,6 @@ def validate_file_type(value):
     if not value.name.lower().endswith(('.png', '.jpg', '.jpeg')):
         raise ValidationError(_('Silahkan upload gambar dengan tipe file PNG, JPEG atau JPG'))
 
-
-
 class UploadFileForm(forms.Form):
     patientName = PatientChoiceField(
         queryset= PatientDataModel.objects.all(),
@@ -205,23 +264,13 @@ class UploadFileForm(forms.Form):
         label='Tanggal Diambil',
     )
 
-
     class Meta:
         model = UploadedFile
         fields = ['file', 'patientName', 'imageDate']
 
-    
-
-        
-
-
- 
-
 class UploadedFile_list(admin.ModelAdmin):
    list_display = ('get_patient_name', 'detail')
    list_display_links = None
-
-
 
    def has_add_permission(self, request):
         return False
@@ -239,9 +288,6 @@ class UploadedFile_list(admin.ModelAdmin):
         ]
 
         return custom_urls + urls
-
-        
-   
 
    def upload_image(self, request):
 
@@ -270,8 +316,6 @@ class UploadedFile_list(admin.ModelAdmin):
 
         return render(request, "upload_and_display.html", {'form': form, 'files': unique_entries.values()})
         
-   
-
    def get_queryset(self, request):
         queryset = super().get_queryset(request)
         # Create a dictionary to store the latest record for each unique patient
@@ -300,25 +344,104 @@ class UploadedFile_list(admin.ModelAdmin):
    		url = reverse("admin:patient_detail", args=[foreign_key_value])
    		return format_html(f'<a href="{url}">📝</a>')
 
-  
-
-   
-   
-
-        
-        
-
-
-
-   
-
-
-	
-
 admin.site.register(UploadedFile, UploadedFile_list)
 
+class GambarMikroskopikForm(forms.Form):
+    patientName = PatientChoiceField(
+        queryset= PatientDataModel.objects.all(),
+        empty_label='Pilih Nama Pasien',  # Remove the empty label (optional)
+        to_field_name='id',
+        label="Nama Pasien"
+    )
+    
+    files = MultipleFileField(validators=[validate_file_type])
 
+    current_date = datetime.now().date()
 
+    imageDate = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date', 'max': str(current_date)}),
+        label='Tanggal Diambil',
+    )
+
+    class Meta:
+        model = GambarMikroskopikSputum
+        fields = ['file', 'patientName', 'imageDate']
+
+class GambarMikroskopik_list(admin.ModelAdmin):
+   list_display = ('get_patient_name', 'detail')
+   list_display_links = None
+
+   def has_add_permission(self, request):
+        return False
+
+   def has_change_permission(self, request):
+        return False 
+   
+   def get_urls(self):
+        urls = super().get_urls()
+
+        custom_urls = [
+            # Define your custom URL patterns here
+            path('upload-image-mikroskopik/', self.upload_image),
+            path('<pk>/mikroskopik-detail', self.admin_site.admin_view(PatientDetailViewMikroskopik.as_view()), name='patient_detail_mikroskopik'),
+        ]
+
+        return custom_urls + urls
+
+   def upload_image(self, request):
+
+        files = GambarMikroskopikSputum.objects.all()
+
+        # Create a dictionary to store unique entries based on a specific field (e.g., 'field_to_check')
+        unique_entries = {}
+
+        # Iterate through the queryset and store unique entries in the dictionary
+        for file in files:
+            key = file.patientName_id  # Use the field you want to check for uniqueness
+            if key not in unique_entries:
+                unique_entries[key] = file
+
+        if request.method == 'POST':
+            form = GambarMikroskopikForm(request.POST, request.FILES)
+            if form.is_valid():
+                selected_patient = form.cleaned_data['patientName']
+                selected_patient_id = selected_patient.id
+                selected_tanggaldiambil = form.cleaned_data['imageDate']
+                for uploaded_file in request.FILES.getlist('files'):
+                    GambarMikroskopikSputum.objects.create(file=uploaded_file, patientName_id=selected_patient_id, imageDate=selected_tanggaldiambil)
+                return redirect('../')
+        else:
+            form = GambarMikroskopikForm()
+
+        return render(request, "upload_and_display.html", {'form': form, 'files': unique_entries.values()})
+        
+   def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        # Create a dictionary to store the latest record for each unique patient
+        latest_records = {}
+        
+        for file in queryset:
+            patient_id = file.patientName.id
+            if patient_id not in latest_records:
+                latest_records[patient_id] = file
+            else:
+                # Check if this record has a more recent uploaded_at date
+                if file.uploaded_at > latest_records[patient_id].uploaded_at:
+                    latest_records[patient_id] = file
+        
+        # Convert the dictionary values back to a queryset
+        return GambarMikroskopikSputum.objects.filter(pk__in=[record.id for record in latest_records.values()])
+
+   def get_patient_name(self, obj):
+   		return obj.patientName.patientName  # Replace 'name' with the actual field name in your Patient model
+   get_patient_name.short_description = 'Patient Name'  # This sets the column header text in the admin list view
+
+   def detail(self, obj: PatientDataModel) -> str:
+   		foreign_key_value = obj.patientName_id
+   		url = reverse("admin:patient_detail_mikroskopik", args=[foreign_key_value])
+   		return format_html(f'<a href="{url}">📝</a>')
+
+admin.site.register(GambarMikroskopikSputum, GambarMikroskopik_list)
 
 
 

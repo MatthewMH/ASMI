@@ -80,14 +80,13 @@
                     <th>Gambar Asli</th>
                     <th>Visualisasi AI</th>
                     <th>Hasil Diagnosis</th>
-                    <th>Prediksi</th>
                     <th>Tanggal Gambar diambil</th>
                     <th colspan="2" ></th>
                 </tr>
             </thead>
             <tbody>
             <form method="post" action="" onsubmit="showLoader()">
-            {% for item in object.uploadedfile_set.all %}
+            {% for item in object.gambarmikroskopiksputum_set.all %}
                 <tr>
                     {% if item.diagnosisResult %}
                         <td>
@@ -118,58 +117,13 @@
 
                     <td>
                         {% if item.diagnosisResult %}
-                            Model mendiagnosis bahwa gambar Chest X-Ray yang diupload terindikasi 
-                                {% with res_printed=0 %}
-                                {% for i in item.get_float_list %}
-                                    {% if i > 0.14 %}
-                                        {% if res_printed > 0 %}
-                                            ,
-                                        {% endif %}
-                                        {% if forloop.counter0 == 2 %}
-                                            <b>NORMAL</b>
-                                        {% elif forloop.counter0 == 0 %}
-                                            <b>TERINFEKSI COVID</b>
-                                        {% elif forloop.counter0 == 1 %}
-                                            <b>TERKENA LUNG OPACITY</b>
-                                        {% elif forloop.counter0 == 3 %}
-                                            <b>TERKENA VIRAL PNEUMONIA</b>
-                                        {% endif %}
-                                        dengan nilai confidence ({{ i|floatformat:"4"|mul:100|floatformat:"2" }}%)
-                                        {% with res_printed=res_printed|add:1 %}
-                                        {% endwith %}
-                                        {% endif %}
-                                {% endfor %}
-                                . Harap perhatikan <b><i>Visualisasi Oleh AI</i></b> yang ditampilkan.
-                                {% endwith %}
+                            Model memprediksi terdapat {{ item.diagnosisResult }} bakteri Acid-Fast Bacillus dalam gambar. 
 
                         {% elif not item.diagnosisResult %}
                             Belum ada data. Silahkan lakukan inference pada data ini.
                         {% endif %}  
 
-
-                  </p>
                 </td>
-
-                    <td>
-                        {% if item.diagnosisResult %}
-
-                            {% for i in item.get_float_list %}
-                                {% if forloop.counter0 == 2 %}
-                                   Normal
-                                {% elif forloop.counter0 == 0 %}
-                                   Terinfeksi COVID
-                                {% elif forloop.counter0 == 1 %}
-                                   Terkena Lung Opacity
-                                {% elif forloop.counter0 == 3 %}
-                                   Terkena Viral Pneumonia 
-                                {% endif %}
-                                ({{ i|floatformat:"4"|mul:100|floatformat:"2" }}%) <br>
-                            {% endfor %}
-                        {% elif not item.diagnosisResult %}
-                            Belum ada data. Silahkan lakukan inference pada data ini.
-                        {% endif %}  
-
-                    </td>
                     <td>
                         {{ item.imageDate|date:"Y-m-d" }} 
                     </td>
@@ -177,11 +131,11 @@
                         <!-- <input type="text" name="idPrint" value="{{ item.id }}"> -->
 
                         {% if item.diagnosisResult %}
-                            <a a href="{% url 'print_item_view' item.id %}" class="button is-danger" name="action" value="print">Print</a>
+                            <a a href="{% url 'print_mikroskopik_view' item.id %}" class="button is-danger" name="action" value="print">Print</a>
                         {% endif %}
                     </td>
                     <td>
-                        <a href="{% url 'delete_item_view' item.id %}" class="button" name="action" value="delete" style="background-color: #ba2121; color: white;">Hapus</a>
+                        <a href="{% url 'delete_mikroskopik_view' item.id %}" class="button" name="action" value="delete" style="background-color: #ba2121; color: white;">Hapus</a>
                     </td>
                 </tr>
             </tbody>
@@ -193,7 +147,6 @@
 
             </form>
         </table>
-
 </body>
 <script>
         function showLoader() {

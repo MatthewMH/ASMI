@@ -19,7 +19,6 @@ class PatientData(models.Model):
 		verbose_name_plural = 'Data Pasien'  # Change the display name here
 	
 	
-
 class UploadedFile(models.Model):
 	patientName = models.ForeignKey(PatientData, on_delete=models.CASCADE)
 	file = models.FileField(upload_to='uploads/')
@@ -40,18 +39,38 @@ class UploadedFile(models.Model):
 	def patient_data(self):
 		return self.patientName
 
-	
+	class Meta:
+		verbose_name_plural = 'Gambar Radiologi Paru Paru'
 
-	
 
+class GambarMikroskopikSputum(models.Model):
+	patientName = models.ForeignKey(PatientData, on_delete=models.CASCADE)
+	file = models.FileField(upload_to='uploads/mikroskopik-image/')
+	diagnosisResult = models.TextField(null=True, blank=True)
+	limeImageResult = models.FileField(default=None)
+	imageDate = models.DateField('Tanggal Image diambil (mm/dd/yyyy)', auto_now_add=False, auto_now=False)
+	uploaded_at = models.DateTimeField(auto_now_add=True)
+
+	def get_float_list(self):
+		float_values = self.diagnosisResult[1:-1].split()
+
+		return [float(value) for value in float_values]
+
+	def __str__(self):
+		return str(self.get_float_list())
+
+
+	def patient_data(self):
+		return self.patientName
+
+	class Meta:
+		verbose_name_plural = 'Gambar Mikroskopik Sputum'
 
 
 class UploadedImage(models.Model):
     image = models.ImageField(upload_to='uploads/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
-
-
-
-
-
+class UploadedGambarMikroskopikSputum(models.Model):
+    image = models.ImageField(upload_to='uploads/mikroskopik-image/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)

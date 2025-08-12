@@ -140,55 +140,8 @@
 			</tr>
             <tr>
                 <td colspan="2">
-                    Model mendiagnosis bahwa gambar Chest X-Ray yang diupload terindikasi 
-                        {% with res_printed=0 %}
-                        {% for i in patient.get_float_list %}
-                            {% if i > 0.14 %}
-                                {% if res_printed > 0 %}
-                                    ,
-                                {% endif %}
-                                {% if forloop.counter0 == 2 %}
-                                    <b>NORMAL</b>
-                                {% elif forloop.counter0 == 0 %}
-                                    <b>TERINFEKSI COVID</b>
-                                {% elif forloop.counter0 == 1 %}
-                                    <b>TERKENA LUNG OPACITY</b>
-                                {% elif forloop.counter0 == 3 %}
-                                    <b>TERKENA VIRAL PNEUMONIA</b>
-                                {% endif %}
-                                dengan nilai confidence ({{ i|floatformat:"4"|mul:100|floatformat:"2" }}%)
-                                {% with res_printed=res_printed|add:1 %}
-                                {% endwith %}
-                                {% endif %}
-                        {% endfor %}
-                        . Harap perhatikan <b><i>Visualisasi Oleh AI</i></b> yang ditampilkan.
-                        {% endwith %}
-                  </p>
+                    Model memprediksi terdapat {{ patient.diagnosisResult }} bakteri Acid-Fast Bacillus dalam gambar.
                 </td>
-                
-                    
-            </tr>
-            <tr>
-            	<td>
-            		Prediksi Gambar
-            	</td>
-            	<td>
-                        <!-- {{item.get_float_list}} -->
-
-                        {% for i in patient.get_float_list %}
-                            {% if forloop.counter0 == 2 %}
-                               Normal
-                            {% elif forloop.counter0 == 0 %}
-                               Terinfeksi COVID
-                            {% elif forloop.counter0 == 1 %}
-                               Terkena Lung Opacity
-                            {% elif forloop.counter0 == 3 %}
-                               Terkena Viral Pneumonia 
-                            {% endif %}
-                            ({{ i|floatformat:"4"|mul:100|floatformat:"2" }}%) <br>
-                        {% endfor %}  
-
-                    </td>
             </tr>
             </tbody>
         </table>

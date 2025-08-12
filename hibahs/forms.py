@@ -1,5 +1,5 @@
 from django import forms
-from .models import UploadedFile, PatientData
+from .models import UploadedFile, PatientData, GambarMikroskopikSputum
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
@@ -48,7 +48,25 @@ class UploadFileForm(forms.ModelForm):
 
     document = forms.FileField(validators=[validate_file_type])    
 
+class GambarMikroskopikForm(forms.ModelForm):
+    patientName = PatientChoiceField(
+        queryset= PatientData.objects.all(),
+        empty_label='Pilih Nama Pasien',  # Remove the empty label (optional)
+        to_field_name='id'
+    )
+    
+    file = MultipleFileField()
 
+    class Meta:
+        model = GambarMikroskopikSputum
+        fields = ['file', 'patientName', 'imageDate']
+
+    imageDate = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'}),
+        label='Tanggal Diambil',
+    )
+
+    document = forms.FileField(validators=[validate_file_type])
 
 class PatientData(forms.ModelForm):
     class Meta:
