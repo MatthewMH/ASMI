@@ -38,10 +38,8 @@ It is a computer-aided diagnosis of from medical images. Current features are CO
 
 	```python manage.py createsuperuser```
 
-# Paper
-Paper related to this project can be found here https://ieeexplore.ieee.org/abstract/document/10903684
-
-	Isnan, Mahmud, et al. "InDRI: Intelligent Diagnosis Radiology Images." 2024 6th International Conference on Cybernetics and Intelligent System (ICORIS). IEEE, 2024.
-
 # Acknowledgment
-This project is collaboration with Imelda Hospital and Imelda University
+This project is an upgrade version of InDRI (Intelligent Diagnosis of Radiology Images). 
+InDRI link: https://github.com/mahmudisnan/indri/tree/main
+InDRI paper: 
+``` Isnan, Mahmud, et al. "InDRI: Intelligent Diagnosis Radiology Images." 2024 6th International Conference on Cybernetics and Intelligent System (ICORIS). IEEE, 2024.```
