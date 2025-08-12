@@ -1,10 +1,10 @@
-# InDRI (Intelligent Diagnosis of Radiology Images)
+# ASMI (Artificial Intelligence System for Medical Images)
 
-It is a computer-aided diagnosis of lung disease using image-based machine learning. 
+It is a computer-aided diagnosis of from medical images. Current features are COVID-19 diagnosis and Acid Fast Bacillus bacteria counting from sputum. 
 
 ## Step to INSTALL 
 
-1. ```git clone https://github.com/mahmudisnan/indri.git```
+1. ```git clone https://github.com/MatthewMH/ASMI.git```
 
 2. create local env with ```python=3.10```
 
@@ -37,14 +37,6 @@ It is a computer-aided diagnosis of lung disease using image-based machine learn
 9. you need to create admin account by run this command
 
 	```python manage.py createsuperuser```
-
-
-# Screenshots App
-![Local Image](media/uploads/1.png)
-
-![Local Image](media/uploads/2.png)
-
-![Local Image](media/uploads/3.png)
 
 # Paper
 Paper related to this project can be found here https://ieeexplore.ieee.org/abstract/document/10903684
