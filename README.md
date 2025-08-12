@@ -40,6 +40,11 @@ It is a computer-aided diagnosis of from medical images. Current features are CO
 
 # Acknowledgment
 This project is an upgrade version of InDRI (Intelligent Diagnosis of Radiology Images). 
-InDRI link: https://github.com/mahmudisnan/indri/tree/main
+
+
+InDRI link: 
+```https://github.com/mahmudisnan/indri/tree/main```
+
+
 InDRI paper: 
 ``` Isnan, Mahmud, et al. "InDRI: Intelligent Diagnosis Radiology Images." 2024 6th International Conference on Cybernetics and Intelligent System (ICORIS). IEEE, 2024.```
